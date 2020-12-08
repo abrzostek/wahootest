@@ -8,10 +8,15 @@ import org.openqa.selenium.support.How;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.util.concurrent.TimeUnit;
+
 public class CheckoutPage extends PageObject {
 
     @FindBy(how = How.ID, using = "customer-email")
     private WebElement emailField;
+
+    @FindBy(how = How.ID, using = "customer-email-error")
+    private WebElement emailFieldError;
 
     @FindBy(how = How.NAME, using = "firstname")
     private WebElement firstNameField;
@@ -37,7 +42,7 @@ public class CheckoutPage extends PageObject {
     @FindBy(how = How.NAME, using = "telephone")
     private WebElement telephoneField;
 
-    @FindBy(how = How.NAME, using = "cardNumber")
+    @FindBy(how = How.NAME, using = "cardnumber")
     private WebElement cardNumberField;
 
     @FindBy(how = How.NAME, using = "exp-date")
@@ -49,6 +54,8 @@ public class CheckoutPage extends PageObject {
     @FindBy(how = How.CSS, using = "button.checkout[title=' Place Order']")
     private WebElement placeOrderButton;
 
+    @FindBy(how = How.XPATH, using = "//div[@data-ui-id = 'checkout-cart-validationmessages-message-error']")
+    private WebElement creditCardErrorMessage;
 
 
     public CheckoutPage(WebDriver driver) {
@@ -59,9 +66,14 @@ public class CheckoutPage extends PageObject {
         return this.emailField;
     }
 
+    public WebElement getEmailFieldError() {
+        return this.emailFieldError;
+    }
+
     public void clickOnPlaceOrderButton() {
         WebDriverWait wait = new WebDriverWait(driver, 20);
         wait.until(ExpectedConditions.invisibilityOfAllElements(driver.findElements(By.cssSelector("*[data-role=loader]"))));
+        wait.until(ExpectedConditions.elementToBeClickable(placeOrderButton));
         placeOrderButton.click();
     }
 
@@ -87,14 +99,24 @@ public class CheckoutPage extends PageObject {
         wait.until(ExpectedConditions.invisibilityOfAllElements(driver.findElements(By.cssSelector("*[data-role=loader]"))));
 
         // switch to the Stripe payment iframe so we can fill in the card fields
-        WebElement paymentIframe = driver.findElement(By.cssSelector("*[title='Secure card payment input frame']"));
+        WebElement paymentIframe = driver.findElement(By.xpath("//div[@class='amcheckout-wrapper']//div[@class='payment-method-content']//form//iframe"));
         driver.switchTo().frame(paymentIframe);
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("cardNumber")));
-        driver.findElement(By.name("cardNumber")).sendKeys("4111111111111111");
-
-        //cardNumberField.sendKeys("4111111111111111");
+        cardNumberField.sendKeys("4111111111111111");
         cardExpirationField.sendKeys("08/24");
         cardCVCField.sendKeys("111");
+
+        // switch back to main content
+        driver.switchTo().defaultContent();
     }
+
+    public WebElement getCCErrorMessage() {
+        return this.creditCardErrorMessage;
+    }
+
+    public String getCCErrorMessageText() {
+        return creditCardErrorMessage.getText();
+    }
+
+
 }

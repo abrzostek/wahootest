@@ -1,7 +1,6 @@
 package tests;
 
 import org.junit.jupiter.api.*;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -15,7 +14,7 @@ public class WahooTests {
 
     @BeforeEach
     public void startBrowser() {
-        System.setProperty("webdriver.chrome.driver","bin/chromedriver");
+        System.setProperty("webdriver.chrome.driver", "bin/chromedriver");
         this.driver = new ChromeDriver();
     }
 
@@ -52,9 +51,13 @@ public class WahooTests {
 
         // checkout with empty fields should display errors
         checkoutPage.clickOnPlaceOrderButton();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("customer-email-error")));
+        wait.until(ExpectedConditions.visibilityOf(checkoutPage.getEmailFieldError()));
 
+        // fill the forms with data, click Place Order button and assert that error message is shown
         checkoutPage.fillFormWithData();
+        checkoutPage.clickOnPlaceOrderButton();
+        wait.until(ExpectedConditions.visibilityOf(checkoutPage.getCCErrorMessage()));
+        assertEquals("Your card was declined. Your request was in live mode, but used a known test card.", checkoutPage.getCCErrorMessageText());
     }
 
     @AfterEach
